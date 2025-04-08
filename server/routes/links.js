@@ -1,5 +1,5 @@
 const express = require('express');
-const { createLink, getLinks, getLinkAnalytics } = require('../controllers/linkController');
+const { createLink, getLinks, getLinkAnalytics, updateLink, deleteLink} = require('../controllers/linkController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -9,6 +9,10 @@ router.use(protect);
 router.route('/')
     .post(createLink)
     .get(getLinks); // Handles pagination/search via query params
+
+router.route('/:id')
+    .put(updateLink)
+    .delete(deleteLink);
 
 router.route('/:id/analytics').get(getLinkAnalytics);
 

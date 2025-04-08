@@ -1,6 +1,7 @@
 import React from 'react';
 // Make sure react-router-dom v6 components are imported
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage'; // Assuming this is a JS file or configured to resolve
 import DashboardPage from './pages/DashboardPage'; // Assuming this is a JS file or configured to resolve
 import ProtectedRoute from './components/Layout/ProtectedRoute'; // Assuming this is a JS file or configured to resolve
@@ -20,6 +21,10 @@ function App() {
       React.createElement(Route, { // First Route
         path: "/login",
         element: React.createElement(LoginPage, null) // Element prop using LoginPage
+      }),
+      React.createElement(Route, { // First Route
+        path: "/register",
+        element: React.createElement(RegisterPage, null) // Element prop using LoginPage
       }),
       React.createElement(Route, { // Second Route (Wrapper for protected routes)
         element: React.createElement(ProtectedRoute, null), // Element prop using ProtectedRoute

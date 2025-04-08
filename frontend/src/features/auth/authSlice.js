@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../app/api';
+import { resetLinksState } from '../links/linksSlice';
 
 // Load user info from localStorage
 const storedUserInfo = localStorage.getItem('userInfo');
@@ -29,14 +30,30 @@ export const login = createAsyncThunk(
   }
 );
 
-// Async Thunk for logout (simple state reset)
+export const register = createAsyncThunk(
+  'auth/register',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/register', { email, password });
+      localStorage.setItem('userInfo', JSON.stringify(data)); // Save user info on register too
+      return data;
+    } catch (error) {
+      const message =
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message;
+      return rejectWithValue(message);
+    }
+  }
+);
+
+// Async Thunk for logout
 export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { dispatch }) => {
         localStorage.removeItem('userInfo');
-        // Optionally dispatch actions to clear other state (like links)
-        // dispatch(resetLinksState()); // You'd need to define this in linksSlice
-        return null; // Return null or any indicator of successful logout
+        dispatch(resetLinksState()); // Reset links state on logout
+        return null;
     }
 );
 
@@ -45,17 +62,14 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // logout action could be a simple reducer if no async actions needed
-     // logout: (state) => {
-     //   localStorage.removeItem('userInfo');
-     //   state.userInfo = null;
-     //   state.error = null;
-     //   state.loading = false;
-     // },
+    // Optional: Simple reducer to clear errors if needed
+     clearAuthError: (state) => {
+         state.error = null;
+     }
   },
   extraReducers: (builder) => {
     builder
-      // Login reducers
+      // Login reducers (existing)
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -67,10 +81,25 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; // Error message from rejectWithValue
+        state.error = action.payload;
         state.userInfo = null;
       })
-       // Logout reducers
+       // Register reducers (new)
+      .addCase(register.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+          state.loading = false;
+          state.userInfo = action.payload; // Log user in immediately after registration
+          state.error = null;
+      })
+      .addCase(register.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload;
+          state.userInfo = null;
+      })
+       // Logout reducers (existing)
       .addCase(logout.fulfilled, (state) => {
           state.userInfo = null;
           state.error = null;
@@ -79,5 +108,5 @@ const authSlice = createSlice({
   },
 });
 
-// export const { logout } = authSlice.actions; // Export if defined as simple reducer
+export const { clearAuthError } = authSlice.actions; // Export if needed
 export default authSlice.reducer;

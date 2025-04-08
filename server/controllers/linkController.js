@@ -207,5 +207,84 @@ const getLinkAnalytics = async (req, res) => {
     }
 };
 
+// @desc    Update a link (Original URL, Expiration)
+// @route   PUT /api/links/:id
+// @access  Private
+const updateLink = async (req, res) => {
+    const { originalUrl, expiresAt } = req.body;
+    const linkId = req.params.id;
+    const userId = req.user._id;
 
-module.exports = { createLink, getLinks, getLinkAnalytics };
+    // Basic validation
+    if (!originalUrl) {
+        return res.status(400).json({ message: 'Original URL is required' });
+    }
+    try {
+        new URL(originalUrl);
+    } catch (error) {
+        return res.status(400).json({ message: 'Invalid Original URL format' });
+    }
+
+    try {
+        const link = await Link.findOne({ _id: linkId, userId: userId });
+
+        if (!link) {
+            return res.status(404).json({ message: 'Link not found or you do not have permission to edit it' });
+        }
+
+        // Update allowed fields
+        link.originalUrl = originalUrl;
+        link.expiresAt = expiresAt ? new Date(expiresAt) : null; // Allow clearing expiration
+
+        const updatedLink = await link.save();
+
+        // Add full short URL back for consistency, like in create/get
+         const fullShortUrl = `${req.protocol}://${req.get('host')}/${updatedLink.shortCode}`;
+         // Get current click count (needed because save doesn't return aggregates)
+         const clickCount = await Click.countDocuments({ linkId: updatedLink._id });
+
+        res.json({
+             ...updatedLink.toObject(),
+             shortUrl: fullShortUrl,
+             totalClicks: clickCount,
+             isExpired: updatedLink.expiresAt && new Date(updatedLink.expiresAt) < new Date(),
+         });
+
+    } catch (error) {
+        console.error('Error updating link:', error);
+        res.status(500).json({ message: 'Server error updating link' });
+    }
+};
+
+// @desc    Delete a link and its associated clicks
+// @route   DELETE /api/links/:id
+// @access  Private
+const deleteLink = async (req, res) => {
+    const linkId = req.params.id;
+    const userId = req.user._id;
+
+    try {
+        const link = await Link.findOne({ _id: linkId, userId: userId });
+
+        if (!link) {
+            return res.status(404).json({ message: 'Link not found or you do not have permission to delete it' });
+        }
+
+        // Delete the link itself
+        await Link.deleteOne({ _id: linkId });
+
+        // Asynchronously delete associated clicks (no need to wait for response)
+        Click.deleteMany({ linkId: linkId }).catch(err => {
+            console.error(`Error deleting clicks for link ${linkId}:`, err);
+            // Log error but don't fail the link deletion response
+        });
+
+        res.json({ message: 'Link and associated data removed successfully' });
+
+    } catch (error) {
+        console.error('Error deleting link:', error);
+        res.status(500).json({ message: 'Server error deleting link' });
+    }
+};
+
+module.exports = { createLink, getLinks, getLinkAnalytics, updateLink, deleteLink};
