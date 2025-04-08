@@ -25,36 +25,6 @@ A full-stack application built with React and Node.js that allows users to short
 *   **Pagination & Search:** Paginate through the list of links and search by original URL or alias on the dashboard.
 *   **Responsive UI:** Clean interface built with Tailwind CSS.
 
-##  MERN Stack Diagram
-
-```mermaid
-graph TD
-    A[User Browser] -- HTTP Request --> B(React Frontend);
-    B -- REST API Calls <br/>(Login, Create Link, Get Links/Analytics) --> C(Node.js/Express Backend);
-    C -- Authenticate/Authorize --> D{Auth Middleware <br/>(JWT Verification)};
-    C -- Store/Retrieve Data --> E(MongoDB Database);
-    B -- Display Data/UI --> A;
-
-    F[Visitor Browser] -- GET Request <br/> (Short URL) --> C;
-    C -- Find Original URL & <br/> Log Click (Async) --> E;
-    C -- HTTP 302 Redirect --> G(Original Long URL);
-    F -- Follow Redirect --> G;
-
-    subgraph Frontend (Client)
-        B
-    end
-
-    subgraph Backend (Server)
-        C
-        D
-    end
-
-    subgraph Database
-        E
-    end
-```
-
-
 ## 🛠️ Tech Stack
 
 *   **Frontend:**
