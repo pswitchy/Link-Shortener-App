@@ -98,8 +98,8 @@ link-shortener-app/
 
 1.  **Clone the Repository:**
     ```bash
-    git clone <your-repository-url>
-    cd link-shortener-app
+    git clone https://github.com/pswitchy/Link-Shortener-App.git
+    cd Link-Shortener-App
     ```
 
 2.  **Setup Backend (`server`):**
@@ -136,10 +136,10 @@ link-shortener-app/
         ```
         *(You should see "Hardcoded user created!" or "Hardcoded user already exists.")*
 
-3.  **Setup Frontend (`client`):**
+3.  **Setup Frontend (`frontend`):**
     *   Navigate to the client directory:
         ```bash
-        cd ../client
+        cd ../frontend
         ```
     *   Install dependencies:
         ```bash
@@ -149,10 +149,10 @@ link-shortener-app/
 
         **If using Vite:**
         ```dotenv
-        # client/.env (for Vite)
+        # frontend/.env (for Vite)
 
         # The root URL of your backend server (NO /api path)
-        VITE_API_BASE_URL=http://localhost:5001
+        REACT_APP_API_BASE_URL=http://localhost:5001
         ```
 
         **If using Create React App:**
@@ -218,25 +218,5 @@ Use the following hardcoded credentials to log in:
 
 ## ☁️ Deployment
 
-*   **Frontend Deployed Link:** `[Link to your deployed Vercel/Netlify site]`
-*   **Backend API Deployed Link (Optional):** `[Link to your deployed Render/Railway/etc. API]`
-
-*(Provide the actual links after deployment)*
-
-**General Steps (Example):**
-
-1.  **Backend:** Deploy the `server` directory to a Node.js hosting platform (Render, Railway, Heroku). Set the necessary environment variables (`MONGODB_URI`, `JWT_SECRET`, `PORT`, `FRONTEND_URL` pointing to the *deployed* frontend URL) in the hosting provider's dashboard.
-2.  **Frontend:** Deploy the `client` directory to a static hosting platform (Vercel, Netlify). Configure the build settings (e.g., Framework: Vite/CRA, Build Command: `npm run build`, Output Dir: `dist` or `build`, Root Directory: `client`). Set the `VITE_API_BASE_URL` (or `REACT_APP_API_BASE_URL`) environment variable to point to your *deployed* backend API URL. Ensure the backend's `FRONTEND_URL` CORS setting matches the final frontend deployment URL exactly.
-
-## 🐛 Known Issues / Future Improvements
-
-*   No user registration (only hardcoded user).
-*   No link editing or deletion functionality.
-*   Basic URL validation; could be more robust.
-*   Analytics do not include geographical data (GeoIP could be added).
-*   Error handling can be improved globally.
-*   UI/UX could be further polished.
-*   Add unit/integration tests.
-
----
-```
+*   **Frontend Deployed Link:** https://link-shortener-app-gilt.vercel.app/
+*   **Backend API Deployed Link :** https://link-shortener-app-9kt8.onrender.com/
