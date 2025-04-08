@@ -6,38 +6,51 @@ require('dotenv').config();
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Basic validation
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Please provide email and password' });
+    if (!username || !email || !password) { // Add username check
+        return res.status(400).json({ message: 'Please provide username, email, and password' });
     }
     // Optional: Add password strength validation here
 
     try {
-        const userExists = await User.findOne({ email: email.toLowerCase() });
+        // Check if username OR email exists
+        const usernameExists = await User.findOne({ username: username }); // Or use appropriate collation for case-insensitivity
+        const emailExists = await User.findOne({ email: email.toLowerCase() });
 
-        if (userExists) {
+        if (usernameExists) {
+            return res.status(400).json({ message: 'Username already taken' });
+        }
+        if (emailExists) {
             return res.status(400).json({ message: 'User already exists with this email' });
         }
 
         const user = new User({
+            username, // Add username
             email: email.toLowerCase(),
-            password, // Hashing is handled by the pre-save hook in User model
+            password,
         });
 
         await user.save();
 
-        // Return user info and token upon successful registration
+        // Return user info and token
         res.status(201).json({
             _id: user._id,
+            username: user.username, // Include username in response
             email: user.email,
             token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-                expiresIn: '30d', // Consistent token expiration
+                expiresIn: '30d',
             }),
         });
 
     } catch (error) {
+        // Check if it's the duplicate key error specifically
+        if (error.code === 11000) {
+             // Determine if it was username or email collision based on error message if possible
+             // For simplicity, provide a generic message or inspect error.keyValue
+            return res.status(400).json({ message: 'Username or Email already exists.' });
+        }
         console.error('Registration error:', error);
         res.status(500).json({ message: 'Server error during registration' });
     }
